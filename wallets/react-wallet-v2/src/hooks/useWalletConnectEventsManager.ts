@@ -14,6 +14,7 @@ import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
 import { TEZOS_SIGNING_METHODS } from '@/data/TezosData'
 import { KADENA_SIGNING_METHODS } from '@/data/KadenaData'
+import { HEDERA_SIGNING_METHODS } from '@/data/HederaData'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -99,6 +100,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case KADENA_SIGNING_METHODS.KADENA_SIGN:
         case KADENA_SIGNING_METHODS.KADENA_QUICKSIGN:
           return ModalStore.open('SessionSignKadenaModal', { requestEvent, requestSession })
+
+        case HEDERA_SIGNING_METHODS.HEDERA_SIGN_AND_EXECUTE_TRANSACTION:
+        case HEDERA_SIGNING_METHODS.HEDERA_SIGN_AND_RETURN_TRANSACTION:
+          return ModalStore.open('SessionSignHederaModal', { requestEvent, requestSession })
+
         default:
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }
