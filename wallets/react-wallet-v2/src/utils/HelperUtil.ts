@@ -7,6 +7,7 @@ import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { TEZOS_CHAINS, TTezosChain } from '@/data/TezosData'
 import { TRON_CHAINS, TTronChain } from '@/data/TronData'
 import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
+import { HEDERA_CHAINS, THederaChain } from '@/data/HederaData'
 
 import { utils } from 'ethers'
 import { Verify } from '@walletconnect/types'
@@ -145,6 +146,13 @@ export function isTezosChain(chain: string) {
 }
 
 /**
+ * Check if chain is part of Hedera standard
+ */
+export function isHederaChain(chain: string) {
+  return chain.includes('hedera')
+}
+
+/**
  * Formats chainId to its name
  */
 export function formatChainName(chainId: string) {
@@ -158,6 +166,7 @@ export function formatChainName(chainId: string) {
     TRON_CHAINS[chainId as TTronChain]?.name ??
     TEZOS_CHAINS[chainId as TTezosChain]?.name ??
     KADENA_CHAINS[chainId as TKadenaChain]?.name ??
+    HEDERA_CHAINS[chainId as THederaChain]?.name ??
     chainId
   )
 }
