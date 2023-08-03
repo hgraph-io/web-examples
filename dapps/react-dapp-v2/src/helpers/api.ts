@@ -3,6 +3,7 @@ import { apiGetKadenaAccountBalance } from "./kadena";
 
 import { AssetData } from "./types";
 import { PactCommand } from "@kadena/client";
+import { apiGetHederaAccountBalance } from "./hedera";
 
 export const rpcProvidersByChainId: Record<number, any> = {
   1: {
@@ -131,6 +132,10 @@ export async function apiGetAccountBalance(
       address,
       networkId as PactCommand["networkId"]
     );
+  }
+
+  if (namespace === "hedera") {
+    return apiGetHederaAccountBalance(address);
   }
 
   if (namespace !== "eip155") {

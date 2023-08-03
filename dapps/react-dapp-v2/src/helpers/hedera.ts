@@ -1,3 +1,4 @@
+import axios, { AxiosInstance } from "axios";
 import { EngineTypes } from "@walletconnect/types";
 import { AccountId, RequestType, Transaction } from "@hashgraph/sdk";
 
@@ -54,3 +55,29 @@ export class HederaParamsFactory {
     return Buffer.from(transactionBytes).toString("base64");
   }
 }
+
+const hederaApi: AxiosInstance = axios.create({
+  timeout: 10000, // 10 secs
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  },
+  baseURL: "https://testnet.mirrornode.hedera.com/api/v1",
+});
+
+const formatTinybarAsHbar = (balance: number | string): string => {
+  const numBalance = Number(balance);
+  const balFromTinybars = numBalance / 1e8;
+  const [integer, decimal] = balFromTinybars.toString().split(".");
+  return Number(integer).toLocaleString() + decimal ? `.${decimal}` : "";
+};
+
+export const apiGetHederaAccountBalance = async (address: string) => {
+  const response = await hederaApi.get(`/accounts/${address}`);
+  const { balance } = response.data.balance;
+  return {
+    balance: formatTinybarAsHbar(balance),
+    name: "HBAR",
+    symbol: "ℏ",
+  };
+};
