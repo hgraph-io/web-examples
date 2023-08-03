@@ -1,5 +1,6 @@
 import type { NextPage } from "next";
 import React, { useEffect, useRef, useState } from "react";
+import { RequestType } from "@hashgraph/sdk";
 
 import Banner from "../components/Banner";
 import Blockchain from "../components/Blockchain";
@@ -20,6 +21,7 @@ import {
   DEFAULT_TRON_METHODS,
   DEFAULT_TEZOS_METHODS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
+  DEFAULT_HEDERA_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -84,6 +86,7 @@ const Home: NextPage = () => {
     tronRpc,
     tezosRpc,
     kadenaRpc,
+    hederaRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -388,6 +391,45 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getHederaActions = (): AccountAction[] => {
+    const actions: AccountAction[] = [];
+    const openModalWithCallback =
+      (callback: keyof typeof hederaRpc) =>
+      async (chainId: string, address: string) => {
+        openRequestModal();
+        await hederaRpc[callback](chainId, address);
+      };
+
+    /** Sign and execute CryptoTransfer */
+    actions.push({
+      method:
+        DEFAULT_HEDERA_METHODS.HEDERA_SIGN_AND_EXECUTE_TRANSACTION +
+        ": " +
+        RequestType.CryptoTransfer.toString(),
+      callback: openModalWithCallback("testSignAndExecuteCryptoTransfer"),
+    });
+
+    /** Sign and execute ConsensusSubmitMessage */
+    actions.push({
+      method:
+        DEFAULT_HEDERA_METHODS.HEDERA_SIGN_AND_EXECUTE_TRANSACTION +
+        ": " +
+        RequestType.ConsensusSubmitMessage.toString(),
+      callback: openModalWithCallback("testSignAndExecuteTopicSubmitMessage"),
+    });
+
+    /** Sign and return CryptoTransfer */
+    actions.push({
+      method:
+        DEFAULT_HEDERA_METHODS.HEDERA_SIGN_AND_RETURN_TRANSACTION +
+        ": " +
+        RequestType.CryptoTransfer.toString(),
+      callback: openModalWithCallback("testSignAndReturnCryptoTransfer"),
+    });
+
+    return actions;
+  };
+
   const getBlockchainActions = (chainId: string) => {
     const [namespace] = chainId.split(":");
     switch (namespace) {
@@ -409,6 +451,8 @@ const Home: NextPage = () => {
         return getTezosActions();
       case "kadena":
         return getKadenaActions();
+      case "hedera":
+        return getHederaActions();
       default:
         break;
     }

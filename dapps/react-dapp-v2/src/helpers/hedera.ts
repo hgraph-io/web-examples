@@ -69,7 +69,9 @@ const formatTinybarAsHbar = (balance: number | string): string => {
   const numBalance = Number(balance);
   const balFromTinybars = numBalance / 1e8;
   const [integer, decimal] = balFromTinybars.toString().split(".");
-  return Number(integer).toLocaleString() + decimal ? `.${decimal}` : "";
+  const formattedInteger = integer ? Number(integer).toLocaleString() : "0";
+  const formattedDecimal = decimal ? `.${decimal}` : "";
+  return formattedInteger + formattedDecimal;
 };
 
 export const apiGetHederaAccountBalance = async (address: string) => {
