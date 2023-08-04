@@ -103,6 +103,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
         case HEDERA_SIGNING_METHODS.HEDERA_SIGN_AND_EXECUTE_TRANSACTION:
         case HEDERA_SIGNING_METHODS.HEDERA_SIGN_AND_RETURN_TRANSACTION:
+        case HEDERA_SIGNING_METHODS.HEDERA_SIGN_MESSAGE:
           return ModalStore.open('SessionSignHederaModal', { requestEvent, requestSession })
 
         default:

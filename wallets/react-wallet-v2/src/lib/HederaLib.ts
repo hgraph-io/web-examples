@@ -68,4 +68,12 @@ export class HederaWallet {
       return { error: (e as Error).message }
     }
   }
+
+  public signMessage(bytes: string) {
+    const buf = Buffer.from(bytes, 'base64')
+    const signedMessage = this.privateKey.sign(buf)
+    return {
+      signature: Buffer.from(signedMessage).toString('base64')
+    }
+  }
 }

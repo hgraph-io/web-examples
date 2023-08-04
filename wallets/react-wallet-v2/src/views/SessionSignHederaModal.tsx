@@ -24,6 +24,10 @@ type HederaSignAndSendTransactionParams = {
   }
 }
 
+type HederaSignMessageParams = {
+  message: string
+}
+
 type SessionRequestParams = SignClientTypes.EventArguments['session_request']['params']
 
 type SummaryDetailProps = {
@@ -47,6 +51,17 @@ const SummaryDetail = ({ label, data }: SummaryDetailProps) => {
   )
 }
 
+const SummaryDetailSection = ({ items }: { items: SummaryDetailProps[] }) => {
+  return (
+    <>
+      <Text h5>Summary</Text>
+      {items.map(({ label, data }) => (
+        <SummaryDetail label={label} data={data} />
+      ))}
+    </>
+  )
+}
+
 const SignTransactionSummary = ({ params }: { params: SessionRequestParams }) => {
   const { transaction } = params.request.params as HederaSignAndSendTransactionParams
   const transactionFromBytes = hederaWallet.transactionFromEncodedBytes(transaction.bytes)
@@ -54,10 +69,10 @@ const SignTransactionSummary = ({ params }: { params: SessionRequestParams }) =>
 
   if (!shouldShow) return null
 
-  let summaryDetailData: SummaryDetailProps[] = []
+  const items: SummaryDetailProps[] = []
 
-  summaryDetailData.push({ label: 'TransactionType', data: transaction.type })
-  summaryDetailData.push({ label: 'Memo', data: transactionFromBytes.transactionMemo })
+  items.push({ label: 'TransactionType', data: transaction.type })
+  items.push({ label: 'Memo', data: transactionFromBytes.transactionMemo })
 
   if (transaction.type === RequestType.CryptoTransfer.toString()) {
     const hbarTransferMap = (transactionFromBytes as TransferTransaction).hbarTransfers
@@ -78,7 +93,7 @@ const SignTransactionSummary = ({ params }: { params: SessionRequestParams }) =>
           ))}
         </>
       )
-      summaryDetailData.push({ label: 'HBAR Transfers', data: HbarTransferSummary })
+      items.push({ label: 'HBAR Transfers', data: HbarTransferSummary })
     }
 
     /**
@@ -91,20 +106,24 @@ const SignTransactionSummary = ({ params }: { params: SessionRequestParams }) =>
     const uint8Message = txn.getMessage()
     const message = uint8Message && Buffer.from(uint8Message as any, 'base64').toString()
 
-    summaryDetailData.push({ label: 'Topic ID', data: txn.topicId?.toString() })
-    summaryDetailData.push({ label: 'Message', data: message })
+    items.push({ label: 'Topic ID', data: txn.topicId?.toString() })
+    items.push({ label: 'Message', data: message })
   }
 
-  if (!summaryDetailData.length) return null
+  if (!items.length) return null
 
-  return (
-    <>
-      <Text h5>Summary</Text>
-      {summaryDetailData.map(({ label, data }) => (
-        <SummaryDetail label={label} data={data} />
-      ))}
-    </>
-  )
+  return <SummaryDetailSection items={items} />
+}
+
+const SignMessageSummary = ({ params }: { params: SessionRequestParams }) => {
+  const { message } = params.request.params as HederaSignMessageParams
+  const decodedMessage = Buffer.from(message, 'base64').toString()
+
+  const items: SummaryDetailProps[] = []
+
+  items.push({ label: 'Decoded Message Data', data: decodedMessage })
+
+  return <SummaryDetailSection items={items} />
 }
 
 const RequestSummary = ({ params }: { params: SessionRequestParams }) => {
@@ -112,6 +131,8 @@ const RequestSummary = ({ params }: { params: SessionRequestParams }) => {
     case HEDERA_SIGNING_METHODS.HEDERA_SIGN_AND_EXECUTE_TRANSACTION:
     case HEDERA_SIGNING_METHODS.HEDERA_SIGN_AND_RETURN_TRANSACTION:
       return <SignTransactionSummary params={params} />
+    case HEDERA_SIGNING_METHODS.HEDERA_SIGN_MESSAGE:
+      return <SignMessageSummary params={params} />
     default:
       return null
   }

@@ -38,6 +38,14 @@ export async function approveHederaRequest(
         params.request.params.transaction.type
       )
       return formatJsonRpcResult(id, result)
+    case HEDERA_SIGNING_METHODS.HEDERA_SIGN_MESSAGE:
+      try {
+        console.log('approve', { method: request.method, id, params })
+        const result = hederaWallet.signMessage(params.request.params.message)
+        return formatJsonRpcResult(id, result)
+      } catch (e) {
+        console.error(e)
+      }
     default:
       return formatJsonRpcError(id, getSdkError('INVALID_METHOD').message)
   }
