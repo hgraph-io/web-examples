@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { EngineTypes } from "@walletconnect/types";
-import { AccountId, RequestType, Transaction } from "@hashgraph/sdk";
+import { AccountId, Hbar, RequestType, Transaction } from "@hashgraph/sdk";
 
 type TypedRequestParams<T> = Omit<EngineTypes.RequestParams, "request"> & {
   request: Omit<EngineTypes.RequestParams["request"], "params"> & {
@@ -79,12 +79,7 @@ const hederaApi: AxiosInstance = axios.create({
 });
 
 const formatTinybarAsHbar = (balance: number | string): string => {
-  const numBalance = Number(balance);
-  const balFromTinybars = numBalance / 1e8;
-  const [integer, decimal] = balFromTinybars.toString().split(".");
-  const formattedInteger = integer ? Number(integer).toLocaleString() : "0";
-  const formattedDecimal = decimal ? `.${decimal}` : "";
-  return formattedInteger + formattedDecimal;
+  return Hbar.fromTinybars(balance).toBigNumber().toFormat(8);
 };
 
 export const apiGetHederaAccountBalance = async (address: string) => {
