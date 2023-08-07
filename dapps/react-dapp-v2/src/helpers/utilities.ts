@@ -37,6 +37,11 @@ export function ellipseText(text = "", maxLength = 9999): string {
 }
 
 export function ellipseAddress(address = "", width = 10): string {
+  /**
+   * The formatting logic below only makes sense if the address length
+   * is more than two times the `width` value. Otherwise, there's not
+   * actually anything to ellipsize, and we can just use the raw address.
+   */
   if (!(address.length > 2 * width)) {
     return address;
   }
