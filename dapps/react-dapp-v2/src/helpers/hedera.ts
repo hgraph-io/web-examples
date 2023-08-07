@@ -12,7 +12,7 @@ type TypedRequestParams<T> = Omit<EngineTypes.RequestParams, "request"> & {
  * `transaction.type` should be an instance of `RequestType` from `@hashgraph/sdk`.
  * e.g. RequestType.CryptoTransfer.toString()
  */
-export type HederaSignAndSendTransactionParams = {
+export type HederaSignAndExecuteTransactionParams = {
   transaction: {
     type: string;
     bytes: string;
@@ -24,14 +24,14 @@ export type HederaSignMessageParams = {
 };
 
 export type HederaSessionRequestParams = TypedRequestParams<
-  HederaSignAndSendTransactionParams | HederaSignMessageParams
+  HederaSignAndExecuteTransactionParams | HederaSignMessageParams
 >;
 
 export class HederaParamsFactory {
   public static buildTransactionPayload(
     type: RequestType,
     transaction: Transaction
-  ): HederaSignAndSendTransactionParams {
+  ): HederaSignAndExecuteTransactionParams {
     this._setNodeAccountIds(transaction);
     this._freezeTransaction(transaction);
     return {
