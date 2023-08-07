@@ -56,7 +56,7 @@ const SummaryDetailSection = ({ items }: { items: SummaryDetailProps[] }) => {
     <>
       <Text h5>Summary</Text>
       {items.map(({ label, data }) => (
-        <SummaryDetail label={label} data={data} />
+        <SummaryDetail key={label} label={label} data={data} />
       ))}
     </>
   )
@@ -82,7 +82,7 @@ const SignTransactionSummary = ({ params }: { params: SessionRequestParams }) =>
       const HbarTransferSummary = (
         <>
           {hbarTransfers.map(([accountId, amount]) => (
-            <div>
+            <div key={accountId.toString() + amount}>
               <Text span color="$gray400">
                 {`• ${accountId.toString()}: `}
                 <Text span color={amount.isNegative() ? 'error' : 'success'}>
