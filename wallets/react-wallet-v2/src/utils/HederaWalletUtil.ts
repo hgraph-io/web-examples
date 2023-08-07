@@ -14,8 +14,7 @@ export async function createOrRestoreHederaWallet() {
     }
 
     hederaWallet = new HederaWallet({ accountId, privateKey })
-    const account = await hederaWallet.getAccount()
-    hederaAddresses = [account.accountId]
+    hederaAddresses = [hederaWallet.getAccountAddress()]
 
     return {
       hederaWallet,

@@ -25,10 +25,8 @@ export class HederaWallet {
     return client
   }
 
-  public async getAccount() {
-    return {
-      accountId: this.accountId.toString()
-    }
+  public getAccountAddress() {
+    return this.accountId.toString()
   }
 
   public transactionFromEncodedBytes(transactionBytes: string) {
