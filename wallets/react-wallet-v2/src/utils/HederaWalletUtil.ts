@@ -5,17 +5,24 @@ export let hederaWallet: HederaWallet
 
 export async function createOrRestoreHederaWallet() {
   try {
-    const accountId = process.env.NEXT_PUBLIC_HEDERA_ACCOUNT_ID
-    const privateKey = process.env.HEDERA_PRIVATE_KEY
-    if (!accountId || !privateKey) {
+    /**
+     * !!!WARNING!!!
+     * Do not use this approach of storing/accessing private keys in production.
+     * This app is not configured with a secure storage mechanism, so this is just the
+     * best way to make it work and showcase Hedera integration with WalletConnect.
+     */
+    const privateKey = process.env.NEXT_PUBLIC_HEDERA_PRIVATE_KEY
+    const accountAddress = process.env.NEXT_PUBLIC_HEDERA_ACCOUNT_ID
+
+    if (!accountAddress || !privateKey) {
       throw new Error(
         'Missing required env vars: `NEXT_PUBLIC_HEDERA_ACCOUNT_ID` and/or `HEDERA_PRIVATE_KEY`'
       )
     }
 
-    hederaWallet = new HederaWallet({ accountId, privateKey })
-    const account = await hederaWallet.getAccount()
-    hederaAddresses = [account.accountId]
+    const accountId = Number(accountAddress.split('.').pop())
+    hederaWallet = HederaWallet.init({ accountId, privateKey })
+    hederaAddresses = [hederaWallet.getAccountAddress()]
 
     return {
       hederaWallet,
