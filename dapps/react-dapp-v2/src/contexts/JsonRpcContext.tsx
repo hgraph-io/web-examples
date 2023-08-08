@@ -33,7 +33,6 @@ import {
   Hbar,
   PrivateKey,
   RequestType,
-  TopicCreateTransaction,
   TopicMessageSubmitTransaction,
   Transaction,
   TransactionId,
@@ -51,6 +50,7 @@ import {
   HederaParamsFactory,
   HederaSessionRequestParams,
   hederaTestnetClient,
+  createOrRestoreHederaTopicId,
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import {
@@ -1586,14 +1586,7 @@ export function JsonRpcContextProvider({
 
         const payerAccountId = new AccountId(Number(address.split(".").pop()));
         const transactionId = TransactionId.generate(payerAccountId);
-        let topicId = "0.0.12345"; // Submitting to this topic will fail, but we attempt to create a new one below
-
-        if (hederaTestnetClient) {
-          const topicCreateTxn = new TopicCreateTransaction();
-          const response = await topicCreateTxn.execute(hederaTestnetClient);
-          const receipt = await response.getReceipt(hederaTestnetClient);
-          topicId = receipt.topicId?.toString() ?? topicId;
-        }
+        const topicId = await createOrRestoreHederaTopicId();
 
         const transaction = new TopicMessageSubmitTransaction()
           .setTopicId(topicId)

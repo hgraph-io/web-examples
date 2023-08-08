@@ -5,6 +5,7 @@ import {
   Client,
   Hbar,
   RequestType,
+  TopicCreateTransaction,
   Transaction,
 } from "@hashgraph/sdk";
 
@@ -131,3 +132,33 @@ const createTestnetClient = () => {
 };
 
 export const hederaTestnetClient = createTestnetClient();
+
+/** Submitting to this topic may fail, but we attempt to create a new one below */
+const DEFAULT_HEDERA_TOPIC_ID = "0.0.12345";
+const HEDERA_TOPIC_ID_KEY = "hedera-topic-id";
+
+export const createOrRestoreHederaTopicId = async () => {
+  let topicId =
+    localStorage.getItem(HEDERA_TOPIC_ID_KEY) ?? DEFAULT_HEDERA_TOPIC_ID;
+  if (topicId === DEFAULT_HEDERA_TOPIC_ID) {
+    try {
+      /**
+       * Create a new topic id and save to local storage.
+       * Note: Hedera Testnet occassionally resets data. If you have a stale topic id
+       * saved in local storage, just remove it by running `localStorage.removeItem('hedera-topic-id')`
+       * in the browswer console and then reload the app.
+       */
+      if (hederaTestnetClient) {
+        const topicCreateTxn = new TopicCreateTransaction();
+        const response = await topicCreateTxn.execute(hederaTestnetClient);
+        const receipt = await response.getReceipt(hederaTestnetClient);
+        const newTopicId = receipt.topicId?.toString() ?? topicId;
+        topicId = newTopicId;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  localStorage.setItem(HEDERA_TOPIC_ID_KEY, topicId);
+  return topicId;
+};
