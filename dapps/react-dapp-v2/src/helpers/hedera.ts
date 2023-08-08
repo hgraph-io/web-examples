@@ -1,6 +1,12 @@
 import axios, { AxiosInstance } from "axios";
 import { EngineTypes } from "@walletconnect/types";
-import { AccountId, Hbar, RequestType, Transaction } from "@hashgraph/sdk";
+import {
+  AccountId,
+  Client,
+  Hbar,
+  RequestType,
+  Transaction,
+} from "@hashgraph/sdk";
 
 type TypedRequestParams<T> = Omit<EngineTypes.RequestParams, "request"> & {
   request: Omit<EngineTypes.RequestParams["request"], "params"> & {
@@ -91,3 +97,36 @@ export const apiGetHederaAccountBalance = async (address: string) => {
     symbol: "ℏ",
   };
 };
+
+const createTestnetClient = () => {
+  try {
+    /**
+     * WARNING: Do not use this approach of storing/accessing private keys in production.
+     * This app is not configured with a secure storage mechanism, so this is just the
+     * best way to make it work and showcase Hedera integration with WalletConnect.
+     */
+    const privateKey = process.env.NEXT_PUBLIC_HEDERA_PRIVATE_KEY;
+    const accountAddress = process.env.NEXT_PUBLIC_HEDERA_ACCOUNT_ID;
+
+    if (!accountAddress || !privateKey) {
+      throw new Error(
+        "Missing required env vars: `NEXT_PUBLIC_HEDERA_ACCOUNT_ID` and/or `HEDERA_PRIVATE_KEY`"
+      );
+    }
+
+    const id = Number(accountAddress.split(".").pop());
+    const accountId = new AccountId(id);
+
+    const client = Client.forTestnet();
+    client.setOperator(accountId, privateKey);
+    client.setDefaultMaxTransactionFee(new Hbar(100));
+    client.setMaxQueryPayment(new Hbar(50));
+
+    return client;
+  } catch (e) {
+    console.error("Failed to initialize Hedera wallet", e);
+    return null;
+  }
+};
+
+export const hederaTestnetClient = createTestnetClient();
