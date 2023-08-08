@@ -6,7 +6,8 @@ export let hederaWallet: HederaWallet
 export async function createOrRestoreHederaWallet() {
   try {
     /**
-     * WARNING: Do not use this approach of storing/accessing private keys in production.
+     * !!!WARNING!!!
+     * Do not use this approach of storing/accessing private keys in production.
      * This app is not configured with a secure storage mechanism, so this is just the
      * best way to make it work and showcase Hedera integration with WalletConnect.
      */
