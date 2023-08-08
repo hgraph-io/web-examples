@@ -28,13 +28,16 @@ import {
 } from "@kadena/client";
 import { PactNumber } from "@kadena/pactjs";
 import {
-  Hbar,
-  TransferTransaction,
+  AccountCreateTransaction,
   AccountId,
-  TransactionId,
+  Hbar,
+  PrivateKey,
   RequestType,
+  TopicCreateTransaction,
   TopicMessageSubmitTransaction,
   Transaction,
+  TransactionId,
+  TransferTransaction,
 } from "@hashgraph/sdk";
 import {
   KadenaAccount,
@@ -47,6 +50,7 @@ import {
   verifySignature,
   HederaParamsFactory,
   HederaSessionRequestParams,
+  hederaTestnetClient,
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import {
@@ -1504,11 +1508,28 @@ export function JsonRpcContextProvider({
 
   // -------- HEDERA RPC METHODS --------
 
-  const _buildTestTransferTransaction = (address: string) => {
+  const _buildTestTransferTransaction = async (address: string) => {
     const payerAccountId = new AccountId(Number(address.split(".").pop()));
     const transactionId = TransactionId.generate(payerAccountId);
     const transactionAmt = 1000;
-    const receiverAddress = "0.0.432284"; // hard-coded to my 2nd test account for now
+    let receiverAddress = "0.0.54321"; // Transferring to this account may fail, but we attempt to create a new one below
+
+    if (hederaTestnetClient) {
+      //Create new account keys
+      const newAccountPrivateKeys = PrivateKey.generateED25519();
+      const newAccountPublicKey = newAccountPrivateKeys.publicKey;
+
+      //Create a new account with 1,000 tinybar starting balance
+      const newAccount = await new AccountCreateTransaction()
+        .setKey(newAccountPublicKey)
+        .setInitialBalance(Hbar.fromTinybars(1000))
+        .execute(hederaTestnetClient);
+
+      //Get the new account ID
+      const receipt = await newAccount.getReceipt(hederaTestnetClient);
+      receiverAddress = receipt.accountId?.toString() ?? receiverAddress;
+    }
+
     const memo = `Transfer amount: ${Hbar.fromTinybars(
       transactionAmt
     ).toString()}, from: ${address}, to: ${receiverAddress}`;
@@ -1529,7 +1550,7 @@ export function JsonRpcContextProvider({
         const method =
           DEFAULT_HEDERA_METHODS.HEDERA_SIGN_AND_EXECUTE_TRANSACTION;
 
-        const transaction = _buildTestTransferTransaction(address);
+        const transaction = await _buildTestTransferTransaction(address);
 
         const params = HederaParamsFactory.buildTransactionPayload(
           RequestType.CryptoTransfer,
@@ -1565,9 +1586,17 @@ export function JsonRpcContextProvider({
 
         const payerAccountId = new AccountId(Number(address.split(".").pop()));
         const transactionId = TransactionId.generate(payerAccountId);
+        let topicId = "0.0.12345"; // Submitting to this topic will fail, but we attempt to create a new one below
+
+        if (hederaTestnetClient) {
+          const topicCreateTxn = new TopicCreateTransaction();
+          const response = await topicCreateTxn.execute(hederaTestnetClient);
+          const receipt = await response.getReceipt(hederaTestnetClient);
+          topicId = receipt.topicId?.toString() ?? topicId;
+        }
 
         const transaction = new TopicMessageSubmitTransaction()
-          .setTopicId("0.0.432078") // Topic created for testing this app
+          .setTopicId(topicId)
           .setMessage(
             `Hello from hedera-walletconnect-dapp at ${new Date().toISOString()}`
           )
@@ -1605,7 +1634,7 @@ export function JsonRpcContextProvider({
         const method =
           DEFAULT_HEDERA_METHODS.HEDERA_SIGN_AND_RETURN_TRANSACTION;
 
-        const transaction = _buildTestTransferTransaction(address);
+        const transaction = await _buildTestTransferTransaction(address);
 
         const params = HederaParamsFactory.buildTransactionPayload(
           RequestType.CryptoTransfer,
