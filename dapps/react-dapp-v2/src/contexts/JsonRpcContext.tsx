@@ -51,6 +51,7 @@ import {
   HederaSessionRequestParams,
   hederaTestnetClient,
   createOrRestoreHederaTopicId,
+  createOrRestoreHederaTransferReceiverAddress,
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import {
@@ -1512,23 +1513,8 @@ export function JsonRpcContextProvider({
     const payerAccountId = new AccountId(Number(address.split(".").pop()));
     const transactionId = TransactionId.generate(payerAccountId);
     const transactionAmt = 1000;
-    let receiverAddress = "0.0.54321"; // Transferring to this account may fail, but we attempt to create a new one below
-
-    if (hederaTestnetClient) {
-      //Create new account keys
-      const newAccountPrivateKeys = PrivateKey.generateED25519();
-      const newAccountPublicKey = newAccountPrivateKeys.publicKey;
-
-      //Create a new account with 1,000 tinybar starting balance
-      const newAccount = await new AccountCreateTransaction()
-        .setKey(newAccountPublicKey)
-        .setInitialBalance(Hbar.fromTinybars(1000))
-        .execute(hederaTestnetClient);
-
-      //Get the new account ID
-      const receipt = await newAccount.getReceipt(hederaTestnetClient);
-      receiverAddress = receipt.accountId?.toString() ?? receiverAddress;
-    }
+    const receiverAddress =
+      await createOrRestoreHederaTransferReceiverAddress();
 
     const memo = `Transfer amount: ${Hbar.fromTinybars(
       transactionAmt

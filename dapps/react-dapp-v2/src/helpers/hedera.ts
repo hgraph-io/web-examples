@@ -1,9 +1,11 @@
 import axios, { AxiosInstance } from "axios";
 import { EngineTypes } from "@walletconnect/types";
 import {
+  AccountCreateTransaction,
   AccountId,
   Client,
   Hbar,
+  PrivateKey,
   RequestType,
   TopicCreateTransaction,
   Transaction,
@@ -161,4 +163,43 @@ export const createOrRestoreHederaTopicId = async () => {
   }
   localStorage.setItem(HEDERA_TOPIC_ID_KEY, topicId);
   return topicId;
+};
+
+/** Transferring to this account may fail, but we attempt to create a new one below */
+const DEFAULT_HEDERA_RECEIVER_ADDRESS = "0.0.54321";
+const HEDERA_RECEIVER_ADDRESS_KEY = "hedera-transfer-recipient-address";
+
+export const createOrRestoreHederaTransferReceiverAddress = async () => {
+  let receiverAddress =
+    localStorage.getItem(HEDERA_RECEIVER_ADDRESS_KEY) ??
+    DEFAULT_HEDERA_RECEIVER_ADDRESS;
+  if (receiverAddress === DEFAULT_HEDERA_RECEIVER_ADDRESS) {
+    try {
+      /**
+       * Create a new Hedera test account and save the account id to local storage.
+       * Note: Hedera Testnet occassionally resets data. If you have a stale account id
+       * saved in local storage, just remove it by running `localStorage.removeItem('hedera-transfer-recipient-address')`
+       * in the browswer console and then reload the app.
+       */
+      if (hederaTestnetClient) {
+        //Create new account keys
+        const newAccountPrivateKeys = PrivateKey.generateED25519();
+        const newAccountPublicKey = newAccountPrivateKeys.publicKey;
+
+        //Create a new account with 1,000 tinybar starting balance
+        const newAccount = await new AccountCreateTransaction()
+          .setKey(newAccountPublicKey)
+          .setInitialBalance(Hbar.fromTinybars(1000))
+          .execute(hederaTestnetClient);
+
+        //Get the new account ID
+        const receipt = await newAccount.getReceipt(hederaTestnetClient);
+        receiverAddress = receipt.accountId?.toString() ?? receiverAddress;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  localStorage.setItem(HEDERA_RECEIVER_ADDRESS_KEY, receiverAddress);
+  return receiverAddress;
 };
