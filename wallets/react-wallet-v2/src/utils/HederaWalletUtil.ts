@@ -13,7 +13,8 @@ export async function createOrRestoreHederaWallet() {
       )
     }
 
-    hederaWallet = new HederaWallet({ accountId, privateKey })
+    const accountId = Number(accountAddress.split('.').pop())
+    hederaWallet = HederaWallet.init({ accountId, privateKey: myKey ?? '' })
     hederaAddresses = [hederaWallet.getAccountAddress()]
 
     return {

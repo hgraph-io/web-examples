@@ -1,7 +1,12 @@
 import { Client, Hbar, Transaction, PrivateKey, AccountId } from '@hashgraph/sdk'
 
-type HederaWalletInitOptions = {
-  accountId: string
+type HederaWalletOptions = {
+  accountId: AccountId
+  privateKey: PrivateKey
+}
+
+type InitOptions = {
+  accountId: ConstructorParameters<typeof AccountId>[0]
   privateKey: string
 }
 
@@ -10,19 +15,25 @@ export class HederaWallet {
   private accountId: AccountId
   private privateKey: PrivateKey
 
-  public constructor({ accountId, privateKey }: HederaWalletInitOptions) {
-    const accountAddress = Number(accountId.split('.').pop())
-    this.accountId = new AccountId(accountAddress)
-    this.privateKey = PrivateKey.fromString(privateKey)
+  public constructor({ accountId, privateKey }: HederaWalletOptions) {
+    this.accountId = accountId
+    this.privateKey = privateKey
     this.client = this._initClient({ accountId, privateKey })
   }
 
-  private _initClient({ accountId, privateKey }: HederaWalletInitOptions) {
+  private _initClient({ accountId, privateKey }: HederaWalletOptions) {
     const client = Client.forTestnet()
     client.setOperator(accountId, privateKey)
     client.setDefaultMaxTransactionFee(new Hbar(100))
     client.setMaxQueryPayment(new Hbar(50))
     return client
+  }
+
+  public static init({ accountId, privateKey }: InitOptions) {
+    return new HederaWallet({
+      accountId: new AccountId(accountId),
+      privateKey: PrivateKey.fromString(privateKey)
+    })
   }
 
   public getAccountAddress() {
