@@ -16,7 +16,7 @@ export async function createOrRestoreHederaWallet() {
 
     if (!accountAddress || !privateKey) {
       throw new Error(
-        'Missing required env vars: `NEXT_PUBLIC_HEDERA_ACCOUNT_ID` and/or `HEDERA_PRIVATE_KEY`'
+        'Missing required env vars: `NEXT_PUBLIC_HEDERA_ACCOUNT_ID` and/or `NEXT_PUBLIC_HEDERA_PRIVATE_KEY`'
       )
     }
 
