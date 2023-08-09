@@ -19,7 +19,11 @@ export const HederaChainData: ChainsMap = {
   testnet: {
     name: "Hedera Testnet",
     id: "hedera:testnet",
-    rpc: ["https://testnet.hashio.io/api"],
+    /**
+     * Hedera integration utilizes an sdk instead of a JSON-RPC relay:
+     * {@link https://specs.walletconnect.com/2.0/blockchain-rpc/hedera-rpc}
+     */
+    rpc: [],
     slip44: 3030,
     testnet: true,
   },
