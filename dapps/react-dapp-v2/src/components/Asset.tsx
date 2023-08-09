@@ -48,8 +48,20 @@ function getAssetIcon(asset: AssetData): JSX.Element {
       return <Icon src={maticLogo} />;
     case "kda":
       return <Icon src={kadenaLogo} />;
+    case "ℏ":
+      return <Icon src={"/assets/hedera-hbar-logo.png"} />;
     default:
       return <Icon src={"/assets/eth20.svg"} />;
+  }
+}
+
+function formatAssetBalance(asset: AssetData) {
+  if (!asset.balance) return "0";
+  switch (asset.name.toLowerCase()) {
+    case "hbar":
+      return asset.balance;
+    default:
+      return fromWad(asset.balance);
   }
 }
 
@@ -66,9 +78,9 @@ const Asset = (props: AssetProps) => {
         <SAssetName>{asset.name}</SAssetName>
       </SAssetLeft>
       <SAssetRight>
-        <SAssetBalance>
-          {fromWad(asset.balance || "0")} {asset.symbol}
-        </SAssetBalance>
+        <SAssetBalance>{`${formatAssetBalance(asset)} ${
+          asset.symbol
+        }`}</SAssetBalance>
       </SAssetRight>
     </SAsset>
   );

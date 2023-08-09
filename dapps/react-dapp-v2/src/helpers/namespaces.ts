@@ -19,6 +19,8 @@ import {
   DEFAULT_TEZOS_METHODS,
   DEFAULT_TEZOS_EVENTS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
+  DEFAULT_HEDERA_METHODS,
+  DEFAULT_HEDERA_EVENTS,
 } from "../constants";
 
 export const getNamespacesFromChains = (chains: string[]) => {
@@ -53,6 +55,8 @@ export const getSupportedRequiredMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_TEZOS_METHODS);
     case "kadena":
       return Object.values(DEFAULT_KADENA_METHODS);
+    case "hedera":
+      return Object.values(DEFAULT_HEDERA_METHODS);
     default:
       throw new Error(
         `No default required methods for namespace: ${namespace}`
@@ -72,6 +76,7 @@ export const getSupportedOptionalMethodsByNamespace = (namespace: string) => {
     case "tron":
     case "tezos":
     case "kadena":
+    case "hedera":
       return [];
     default:
       throw new Error(
@@ -100,6 +105,8 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_TEZOS_EVENTS);
     case "kadena":
       return Object.values(DEFAULT_KADENA_EVENTS);
+    case "hedera":
+      return Object.values(DEFAULT_HEDERA_EVENTS);
     default:
       throw new Error(`No default events for namespace: ${namespace}`);
   }

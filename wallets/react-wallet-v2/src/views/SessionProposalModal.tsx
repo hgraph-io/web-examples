@@ -18,7 +18,8 @@ import {
   isMultiversxChain,
   isTronChain,
   isTezosChain,
-  isKadenaChain
+  isKadenaChain,
+  isHederaChain
 } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
@@ -28,6 +29,7 @@ import { getSdkError, mergeArrays } from '@walletconnect/utils'
 import { Fragment, useEffect, useState } from 'react'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
+import { hederaAddresses } from '@/utils/HederaWalletUtil'
 
 export default function SessionProposalModal() {
   const [selectedAccounts, setSelectedAccounts] = useState<Record<string, string[]>>({})
@@ -221,13 +223,23 @@ export default function SessionProposalModal() {
           isRequired={required}
         />
       )
+    } else if (isHederaChain(chain)) {
+      return (
+        <ProposalSelectSection
+          addresses={hederaAddresses}
+          selectedAddresses={selectedAccounts[chain]}
+          onSelect={onSelectAccount}
+          chain={chain}
+          isRequired={required}
+        />
+      )
     }
   }
 
   return (
     <Fragment>
       <RequestModalContainer title="Session Proposal">
-        <ProjectInfoCard metadata={proposer.metadata}/>
+        <ProjectInfoCard metadata={proposer.metadata} />
 
         <Divider y={2} />
         {Object.keys(requiredNamespaces).length != 0 ? <Text h4>Required Namespaces</Text> : null}
@@ -235,7 +247,10 @@ export default function SessionProposalModal() {
           return (
             <Fragment key={chain}>
               <Text css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-              <SessionProposalChainCard requiredNamespace={requiredNamespaces[chain]} data-testid={`session-proposal-card-req-${chain}`}/>
+              <SessionProposalChainCard
+                requiredNamespace={requiredNamespaces[chain]}
+                data-testid={`session-proposal-card-req-${chain}`}
+              />
               {renderAccountSelection(`required:${chain}`, true)}
               <Divider y={2} />
             </Fragment>
@@ -250,7 +265,10 @@ export default function SessionProposalModal() {
             return (
               <Fragment key={chain}>
                 <Text css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-                <SessionProposalChainCard requiredNamespace={optionalNamespaces[chain]} data-testid={`session-proposal-card-opt-${chain}`}/>
+                <SessionProposalChainCard
+                  requiredNamespace={optionalNamespaces[chain]}
+                  data-testid={`session-proposal-card-opt-${chain}`}
+                />
                 {renderAccountSelection(`optional:${chain}`, false)}
                 <Divider y={2} />
               </Fragment>
