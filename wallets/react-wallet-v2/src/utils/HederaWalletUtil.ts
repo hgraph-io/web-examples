@@ -1,6 +1,6 @@
 import { HederaWallet } from '@/lib/HederaLib'
 
-export let hederaAddresses: string[]
+export let hederaAddresses: string[] = []
 export let hederaWallet: HederaWallet
 
 export async function createOrRestoreHederaWallet() {
