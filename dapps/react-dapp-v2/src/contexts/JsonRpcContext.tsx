@@ -28,10 +28,8 @@ import {
 } from "@kadena/client";
 import { PactNumber } from "@kadena/pactjs";
 import {
-  AccountCreateTransaction,
   AccountId,
   Hbar,
-  PrivateKey,
   RequestType,
   TopicMessageSubmitTransaction,
   Transaction,
@@ -49,9 +47,6 @@ import {
   verifySignature,
   HederaParamsFactory,
   HederaSessionRequestParams,
-  hederaTestnetClient,
-  createOrRestoreHederaTopicId,
-  createOrRestoreHederaTransferReceiverAddress,
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import {
@@ -1513,8 +1508,7 @@ export function JsonRpcContextProvider({
     const payerAccountId = new AccountId(Number(address.split(".").pop()));
     const transactionId = TransactionId.generate(payerAccountId);
     const transactionAmt = 1000;
-    const receiverAddress =
-      await createOrRestoreHederaTransferReceiverAddress();
+    const receiverAddress = localStorage.getItem("hedera-transfer-recipient-address") ?? prompt("Enter the Hedera account ID to receive the transfer");
 
     const memo = `Transfer amount: ${Hbar.fromTinybars(
       transactionAmt
@@ -1572,8 +1566,8 @@ export function JsonRpcContextProvider({
 
         const payerAccountId = new AccountId(Number(address.split(".").pop()));
         const transactionId = TransactionId.generate(payerAccountId);
-        const topicId = await createOrRestoreHederaTopicId();
 
+        const topicId = localStorage.getItem("hedera-topic-id") ?? prompt("Enter the Hedera topic ID to receive the message");
         const transaction = new TopicMessageSubmitTransaction()
           .setTopicId(topicId)
           .setMessage(
