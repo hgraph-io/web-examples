@@ -19,6 +19,7 @@ import {
   isTronChain,
   isTezosChain,
   isKadenaChain,
+  isHederaChain,
   styledToast
 } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
@@ -29,6 +30,7 @@ import { getSdkError, mergeArrays } from '@walletconnect/utils'
 import { Fragment, useEffect, useState } from 'react'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
+import { hederaAddresses } from '@/utils/HederaWalletUtil'
 
 export default function SessionProposalModal() {
   const [selectedAccounts, setSelectedAccounts] = useState<Record<string, string[]>>({})
@@ -226,6 +228,16 @@ export default function SessionProposalModal() {
       return (
         <ProposalSelectSection
           addresses={kadenaAddresses}
+          selectedAddresses={selectedAccounts[chain]}
+          onSelect={onSelectAccount}
+          chain={chain}
+          isRequired={required}
+        />
+      )
+    } else if (isHederaChain(chain)) {
+      return (
+        <ProposalSelectSection
+          addresses={hederaAddresses}
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}

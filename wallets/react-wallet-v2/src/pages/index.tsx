@@ -10,6 +10,7 @@ import { TRON_MAINNET_CHAINS, TRON_TEST_CHAINS } from '@/data/TronData'
 import { NEAR_TEST_CHAINS } from '@/data/NEARData'
 import { TEZOS_MAINNET_CHAINS, TEZOS_TEST_CHAINS } from '@/data/TezosData'
 import { KADENA_MAINNET_CHAINS, KADENA_TEST_CHAINS } from '@/data/KadenaData'
+import { HEDERA_CHAINS } from '@/data/HederaData'
 import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
@@ -26,7 +27,8 @@ export default function HomePage() {
     multiversxAddress,
     tronAddress,
     tezosAddress,
-    kadenaAddress
+    kadenaAddress,
+    hederaAddress
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -217,6 +219,16 @@ export default function HomePage() {
               address={kadenaAddress}
               chainId={caip10}
               data-testid={'chain-card-' + caip10.toString()}
+            />
+          ))}
+          {Object.entries(HEDERA_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={hederaAddress}
+              chainId={caip10}
             />
           ))}
         </Fragment>

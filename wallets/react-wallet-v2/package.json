@@ -12,6 +12,7 @@
     "@cosmjs/amino": "0.31.1",
     "@cosmjs/encoding": "0.31.1",
     "@cosmjs/proto-signing": "0.31.1",
+    "@hashgraph/sdk": "^2.31.0",
     "@json-rpc-tools/utils": "1.7.6",
     "@kadena/cryptography-utils": "^0.3.2",
     "@kadena/types": "^0.3.2",

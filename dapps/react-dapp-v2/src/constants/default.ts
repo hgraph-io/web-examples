@@ -36,6 +36,7 @@ export const DEFAULT_TEST_CHAINS = [
   "tron:0xcd8690dc",
   "tezos:testnet",
   "kadena:testnet04",
+  "hedera:testnet",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -149,6 +150,17 @@ export enum DEFAULT_TEZOS_METHODS {
 }
 
 export enum DEFAULT_TEZOS_EVENTS {}
+
+/**
+ * Hedera
+ */
+export enum DEFAULT_HEDERA_METHODS {
+  HEDERA_SIGN_AND_EXECUTE_TRANSACTION = "hedera_signAndExecuteTransaction",
+  HEDERA_SIGN_AND_RETURN_TRANSACTION = "hedera_signAndReturnTransaction",
+  HEDERA_SIGN_MESSAGE = "hedera_signMessage",
+}
+
+export enum DEFAULT_HEDERA_EVENTS {}
 
 export const DEFAULT_GITHUB_REPO_URL =
   "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";

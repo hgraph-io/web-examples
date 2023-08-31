@@ -28,6 +28,17 @@ import {
 } from "@kadena/client";
 import { PactNumber } from "@kadena/pactjs";
 import {
+  AccountCreateTransaction,
+  AccountId,
+  Hbar,
+  PrivateKey,
+  RequestType,
+  TopicMessageSubmitTransaction,
+  Transaction,
+  TransactionId,
+  TransferTransaction,
+} from "@hashgraph/sdk";
+import {
   KadenaAccount,
   eip712,
   formatTestTransaction,
@@ -36,6 +47,11 @@ import {
   hashPersonalMessage,
   hashTypedDataMessage,
   verifySignature,
+  HederaParamsFactory,
+  HederaSessionRequestParams,
+  hederaTestnetClient,
+  createOrRestoreHederaTopicId,
+  createOrRestoreHederaTransferReceiverAddress,
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import {
@@ -49,6 +65,7 @@ import {
   DEFAULT_TEZOS_METHODS,
   DEFAULT_KADENA_METHODS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
+  DEFAULT_HEDERA_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -123,6 +140,12 @@ interface IContext {
     testGetAccounts: TRpcRequestCallback;
     testSign: TRpcRequestCallback;
     testQuicksign: TRpcRequestCallback;
+  };
+  hederaRpc: {
+    testSignAndExecuteCryptoTransfer: TRpcRequestCallback;
+    testSignAndExecuteTopicSubmitMessage: TRpcRequestCallback;
+    testSignAndReturnCryptoTransfer: TRpcRequestCallback;
+    testSignMessage: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -1484,6 +1507,175 @@ export function JsonRpcContextProvider({
     ),
   };
 
+  // -------- HEDERA RPC METHODS --------
+
+  const _buildTestTransferTransaction = async (address: string) => {
+    const payerAccountId = new AccountId(Number(address.split(".").pop()));
+    const transactionId = TransactionId.generate(payerAccountId);
+    const transactionAmt = 1000;
+    const receiverAddress =
+      await createOrRestoreHederaTransferReceiverAddress();
+
+    const memo = `Transfer amount: ${Hbar.fromTinybars(
+      transactionAmt
+    ).toString()}, from: ${address}, to: ${receiverAddress}`;
+
+    return new TransferTransaction()
+      .addHbarTransfer(address, Hbar.fromTinybars(-transactionAmt))
+      .addHbarTransfer(receiverAddress, Hbar.fromTinybars(transactionAmt))
+      .setTransactionMemo(memo)
+      .setTransactionId(transactionId);
+  };
+
+  const hederaRpc = {
+    testSignAndExecuteCryptoTransfer: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method =
+          DEFAULT_HEDERA_METHODS.HEDERA_SIGN_AND_EXECUTE_TRANSACTION;
+
+        const transaction = await _buildTestTransferTransaction(address);
+
+        const params = HederaParamsFactory.buildTransactionPayload(
+          RequestType.CryptoTransfer,
+          transaction
+        );
+
+        const payload: HederaSessionRequestParams = {
+          topic: session!.topic,
+          chainId,
+          request: {
+            method,
+            params,
+          },
+        };
+
+        const result = await client!.request(payload);
+
+        return {
+          method,
+          address,
+          valid: true,
+          result: JSON.stringify(result),
+        };
+      }
+    ),
+    testSignAndExecuteTopicSubmitMessage: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method =
+          DEFAULT_HEDERA_METHODS.HEDERA_SIGN_AND_EXECUTE_TRANSACTION;
+
+        const payerAccountId = new AccountId(Number(address.split(".").pop()));
+        const transactionId = TransactionId.generate(payerAccountId);
+        const topicId = await createOrRestoreHederaTopicId();
+
+        const transaction = new TopicMessageSubmitTransaction()
+          .setTopicId(topicId)
+          .setMessage(
+            `Hello from hedera-walletconnect-dapp at ${new Date().toISOString()}`
+          )
+          .setTransactionId(transactionId);
+
+        const params = HederaParamsFactory.buildTransactionPayload(
+          RequestType.ConsensusSubmitMessage,
+          transaction
+        );
+
+        const payload: HederaSessionRequestParams = {
+          topic: session!.topic,
+          chainId,
+          request: {
+            method,
+            params,
+          },
+        };
+
+        const result = await client!.request(payload);
+
+        return {
+          method,
+          address,
+          valid: true,
+          result: JSON.stringify(result),
+        };
+      }
+    ),
+    testSignAndReturnCryptoTransfer: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method =
+          DEFAULT_HEDERA_METHODS.HEDERA_SIGN_AND_RETURN_TRANSACTION;
+
+        const transaction = await _buildTestTransferTransaction(address);
+
+        const params = HederaParamsFactory.buildTransactionPayload(
+          RequestType.CryptoTransfer,
+          transaction
+        );
+
+        const payload: HederaSessionRequestParams = {
+          topic: session!.topic,
+          chainId,
+          request: {
+            method,
+            params,
+          },
+        };
+
+        const result = await client!.request(payload);
+
+        return {
+          method,
+          address,
+          valid: true,
+          result: JSON.stringify({
+            raw: result,
+            decoded: Transaction.fromBytes(
+              Buffer.from((result as any).transaction.bytes, "base64")
+            ),
+          }),
+        };
+      }
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_HEDERA_METHODS.HEDERA_SIGN_MESSAGE;
+
+        const params = HederaParamsFactory.buildSignMessagePayload(
+          "Hello from hedera-walletconnect-dapp at " + new Date().toISOString()
+        );
+
+        const payload: HederaSessionRequestParams = {
+          topic: session!.topic,
+          chainId,
+          request: {
+            method,
+            params,
+          },
+        };
+
+        const result = await client!.request(payload);
+
+        return {
+          method,
+          address,
+          valid: true,
+          result: JSON.stringify(result),
+        };
+      }
+    ),
+  };
+
   return (
     <JsonRpcContext.Provider
       value={{
@@ -1497,6 +1689,7 @@ export function JsonRpcContextProvider({
         tronRpc,
         tezosRpc,
         kadenaRpc,
+        hederaRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
         isTestnet,
