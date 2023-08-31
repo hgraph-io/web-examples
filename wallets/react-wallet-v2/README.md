@@ -24,8 +24,6 @@ Example is built atop of [NextJS](https://nextjs.org/) in order to abstract comp
 
 3. If you want to test Hedera integration, go to [Hedera Portal](https://portal.hedera.com/) to create a Testnet account. Otherwise ignore this step.
 
-3. Install dependencies `yarn install` or `npm install`
-
 4. Install dependencies `yarn install` or `npm install`
 
 5. Setup your environment variables
