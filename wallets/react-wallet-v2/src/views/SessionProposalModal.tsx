@@ -19,7 +19,8 @@ import {
   isTronChain,
   isTezosChain,
   isKadenaChain,
-  isHederaChain
+  isHederaChain,
+  styledToast
 } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
@@ -111,11 +112,16 @@ export default function SessionProposalModal() {
 
       console.log('approving namespaces:', namespaces)
 
-      await signClient.approve({
-        id,
-        relayProtocol: relays[0].protocol,
-        namespaces
-      })
+      try {
+        await signClient.approve({
+          id,
+          relayProtocol: relays[0].protocol,
+          namespaces
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
     }
     ModalStore.close()
   }
@@ -123,10 +129,15 @@ export default function SessionProposalModal() {
   // Hanlde reject action
   async function onReject() {
     if (proposal) {
-      await signClient.reject({
-        id,
-        reason: getSdkError('USER_REJECTED_METHODS')
-      })
+      try {
+        await signClient.reject({
+          id,
+          reason: getSdkError('USER_REJECTED_METHODS')
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
     }
     ModalStore.close()
   }
