@@ -21,7 +21,7 @@ export const HederaChainData: ChainsMap = {
     id: "hedera:testnet",
     /**
      * Hedera integration utilizes an sdk instead of a JSON-RPC relay:
-     * {@link https://specs.walletconnect.com/2.0/blockchain-rpc/hedera-rpc}
+     * {@link https://walletconnect-specs-git-fork-hgraph-io-main-walletconnect1.vercel.app/2.0/blockchain-rpc/hedera-rpc}
      */
     rpc: [],
     slip44: 3030,
